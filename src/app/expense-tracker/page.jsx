@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "../config/firebase-config";
@@ -14,6 +14,7 @@ import Loader from "../components/loader";
 import Greeting from "../components/greetings";
 import { IoIosArrowRoundUp, IoIosArrowRoundDown } from "react-icons/io";
 import { useRouter } from "next/navigation";
+import { SignedIn, UserButton } from "@clerk/nextjs";
 
 const ExpenseTracker = () => {
   const router = useRouter();
@@ -22,6 +23,7 @@ const ExpenseTracker = () => {
   const [transactionType, setTransactionType] = useState("expense");
   const [editMode, setEditMode] = useState(false);
   const [currentTransactionId, setCurrentTransactionId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { addTransaction } = useAddTransaction();
   const { transactions, transactionTotals, loading } = useGetTransactions();
@@ -58,17 +60,7 @@ const ExpenseTracker = () => {
     setDescription("");
     setTransactionAmount(0);
     setTransactionType("expense");
-  };
-
-  const signUserOut = async () => {
-    try {
-      await signOut(auth);
-      localStorage.clear();
-      router.push("/");
-      toast.success("You are logged out!");
-    } catch (err) {
-      console.error(err);
-    }
+    setIsModalOpen(false);
   };
 
   const onEdit = (transaction) => {
@@ -77,6 +69,7 @@ const ExpenseTracker = () => {
     setTransactionType(transaction.transactionType);
     setEditMode(true);
     setCurrentTransactionId(transaction.id);
+    setIsModalOpen(true);
   };
 
   const onDelete = (transactionId) => {
@@ -91,35 +84,23 @@ const ExpenseTracker = () => {
   };
 
   return (
-    <div className="pt-8">
-      <div className="mx-auto max-w-6xl p-6 bg-white rounded-xl shadow-lg">
-        <div className="flex items-center justify-between mb-4">
-          {profilePhoto && (
-            <div>
-              <img
-                className="w-16 h-16 rounded-full mr-2"
-                src={profilePhoto}
-                alt="Profile Photo"
-              />
-            </div>
-          )}
+    <div className="pt-4">
+      <div className="mx-auto max-w-6xl p-6 bg-white rounded-xl shadow-lg ">
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <button
-              className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition"
-              onClick={signUserOut}
-            >
-              Sign Out
-            </button>
+            <Greeting name={name} />
+            <p className="text-gray-500">
+              Let&apos;s track today&apos;s expenses 😊
+            </p>
+          </div>
+          <div>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
           </div>
         </div>
         <div className="flex flex-col lg:flex-row">
           <div className="flex-1 mr-0 lg:mr-6">
-            <div className="mb-7">
-              <Greeting name={name} />
-              <p className="text-gray-500">
-                Let&apos;s track today&apos;s expenses 😊
-              </p>
-            </div>
             <div className="bg-purple-900 text-white rounded-xl shadow-lg py-7 px-6 mb-8 text-center">
               <h3 className="text-lg mb-2">Total Balance</h3>
               {loading ? (
@@ -150,57 +131,82 @@ const ExpenseTracker = () => {
                 </div>
               </div>
             )}
-
-            <form className="mb-4" onSubmit={onSubmit}>
-              <input
-                type="text"
-                placeholder="Description"
-                value={description}
-                required
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full p-2 mb-2 border rounded-md"
-              />
-              <input
-                type="number"
-                placeholder="Amount"
-                value={transactionAmount}
-                required
-                onChange={(e) => setTransactionAmount(Number(e.target.value))}
-                className="w-full p-2 mb-2 border rounded-md"
-              />
-              <div className="flex items-center mb-2">
-                <input
-                  type="radio"
-                  id="expense"
-                  value="expense"
-                  checked={transactionType === "expense"}
-                  onChange={(e) => setTransactionType(e.target.value)}
-                  className="mr-2"
-                />
-                <label htmlFor="expense" className="mr-4">
-                  Expense
-                </label>
-                <input
-                  type="radio"
-                  id="income"
-                  value="income"
-                  checked={transactionType === "income"}
-                  onChange={(e) => setTransactionType(e.target.value)}
-                  className="mr-2"
-                />
-                <label htmlFor="income">Income</label>
-              </div>
-              <button
-                type="submit"
-                className={`w-full ${
-                  editMode ? "bg-yellow-500" : "bg-green-500"
-                } text-white py-2 rounded-md hover:bg-opacity-80 transition`}
-              >
-                {editMode ? "Update Transaction" : "Add Transaction"}
-              </button>
-            </form>
           </div>
-          <div className="flex-1 mt-4 lg:mt-11 lg:ml-4">
+
+          {/* button */}
+          <div className="flex-1 lg:ml-4">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="mb-8 bg-green-500 text-white py-2 px-3 text-sm rounded-md hover:bg-green-600 transition"
+            >
+              Add New Expenses
+            </button>
+            {isModalOpen && (
+              <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 px-10">
+                <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm relative">
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="absolute top-2 right-2 pt-2 px-4 text-black text-2xl hover:text-red-500"
+                  >
+                    &times;
+                  </button>
+
+                  {/* form */}
+                  <form className="mb-4 mt-8" onSubmit={onSubmit}>
+                    <input
+                      type="text"
+                      placeholder="Description"
+                      value={description}
+                      required
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="w-full p-2 mb-2 border rounded-md"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Amount"
+                      value={transactionAmount}
+                      required
+                      onChange={(e) =>
+                        setTransactionAmount(Number(e.target.value))
+                      }
+                      className="w-full p-2 mb-2 border rounded-md"
+                    />
+                    <div className="flex items-center mb-2">
+                      <input
+                        type="radio"
+                        id="expense"
+                        value="expense"
+                        checked={transactionType === "expense"}
+                        onChange={(e) => setTransactionType(e.target.value)}
+                        className="mr-2"
+                      />
+                      <label htmlFor="expense" className="mr-4">
+                        Expense
+                      </label>
+                      <input
+                        type="radio"
+                        id="income"
+                        value="income"
+                        checked={transactionType === "income"}
+                        onChange={(e) => setTransactionType(e.target.value)}
+                        className="mr-2"
+                      />
+                      <label htmlFor="income">Income</label>
+                    </div>
+                    <button
+                      type="submit"
+                      className={`w-full ${
+                        editMode ? "bg-yellow-500" : "bg-green-500"
+                      } text-white py-2 rounded-md hover:bg-opacity-80 transition mt-4`}
+                    >
+                      {editMode ? "Update Transaction" : "Add Transaction"}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* list of transaction */}
             <h3 className="text-lg lg:text-xl font-bold mb-3">Transactions</h3>
             <div className="transactions overflow-y-auto max-h-[410px]">
               {loading ? (
@@ -244,16 +250,16 @@ const ExpenseTracker = () => {
                         </div>
                         <div className="flex space-x-2">
                           <button
-                            className="transition"
+                            className=""
                             onClick={() => onEdit(transaction)}
                           >
-                            <AiFillEdit color={"#4CAF50"} size={25} />
+                            <AiFillEdit size={20} color={"#4CAF50"}/>
                           </button>
                           <button
-                            className="transition"
+                            className=""
                             onClick={() => onDelete(id)}
                           >
-                            <MdDelete color={"#FF0000"} size={25} />
+                            <MdDelete size={20} color={"#FF0000"}/>
                           </button>
                         </div>
                       </div>

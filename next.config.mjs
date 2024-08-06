@@ -1,17 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  async headers() {
-    return [
-      {
-        source: "/",
-        headers: [
-          {
-            key: "Cross-Origin-Embedder-Policy",
-            value: "unsafe-none",
-          },
-        ],
-      },
-    ];
+  images: {
+    domains: ["lh3.googleusercontent.com"],
+  },
+  env: {
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   },
 };
 

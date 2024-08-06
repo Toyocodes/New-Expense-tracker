@@ -1,32 +1,19 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyBo5TBde3bjHsOVoQ8_TENeNCq2Rk5Hqfg",
-  authDomain: "expense-tracker1-349a3.firebaseapp.com",
-  projectId: "expense-tracker1-349a3",
-  storageBucket: "expense-tracker1-349a3.appspot.com",
-  messagingSenderId: "794792561460",
-  appId: "1:794792561460:web:6edcb1087adb04f27f7361",
-  measurementId: "G-KPKQPLP8KE"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
+
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const provider = new GoogleAuthProvider();
 export const db = getFirestore(app);
 
-provider.setCustomParameters({
-  prompt: 'select_account', 
-});
-//firebase login
-//firebase init
-//firebase deploy
+
